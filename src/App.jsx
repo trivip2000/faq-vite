@@ -1,34 +1,90 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 
+import { useEffect,useState } from 'react';
+import { Input, Collapse,Spin } from 'antd';
+import { groupBy } from 'lodash';
+import { CaretRightOutlined } from '@ant-design/icons';
+import {ContentStyle} from './styled'
+import axios from 'axios'
+const { Panel } = Collapse;
 function App() {
-  const [count, setCount] = useState(0)
-
+  const [loading,setLoading] = useState(false)
+  const [config,setConfig] = useState({})
+  const questions = [
+    {
+        "id": 2,
+        "storeId": "pms-web1.myshopify.com",
+        "question": "Question 2",
+        "answer": "<p>hello</p>",
+        "visible": true,
+        "createdAt": "2023-06-04T14:24:47.577Z",
+        "updatedAt": "2023-06-04T14:24:47.577Z",
+        "categoryId": null
+    },
+    {
+        "id": 3,
+        "storeId": "pms-web1.myshopify.com",
+        "question": "Question 3",
+        "answer": "<p>Anwser Question 3</p>",
+        "visible": true,
+        "createdAt": "2023-06-06T13:59:31.859Z",
+        "updatedAt": "2023-06-06T13:59:31.859Z",
+        "categoryId": null
+    }
+]
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      const res = await axios.get('http://localhost:3000/config');
+      const {data } = res
+      setConfig({...data})
+      setLoading(false);
+    }
+    fetchData()
+  },[])
+  const grouped = groupBy(questions, question =>
+    question.categoryId ? question.categoryId : 'Uncategorized',
+  );
+  console.log(config,"config123123")
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <ContentStyle {...config}>
+      <Spin tip="Loading" spinning={loading} size="large">
+      <div className="title-container">
+          <h2 className="text-center">Frequently Asked Questions</h2>
+          <Input
+            className="text-center input-search"
+            size="large"
+            placeholder="What can we help you with?"
+          />
+          <span className="text-center">
+            Welcome to our FAQ Page. This page is showing theme #1. You can set optional intro text
+            and footer text for your FAQ page. Text you are currently reading is a intro text and
+            can be set through app settings. We also have theme #2 which you can check by navigating
+            to link in a menu bar
+          </span>
+        </div>
+        <div className="question">
+          {Object.keys(grouped).map(key => (
+            <div key={key}>
+              <h4 className="category">{key || 'Uncategorized'}</h4>
+              <Collapse
+                ghost
+                defaultActiveKey={['1']}
+                expandIconPosition="end"
+                expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+              >
+                {grouped[key].map(question => {
+                  return (
+                    <Panel key={question.id} header={question.question}>
+                      <p key={question.id} dangerouslySetInnerHTML={{ __html: question.answer }} />
+                    </Panel>
+                  );
+                })}
+              </Collapse>
+            </div>
+          ))}
+        </div>
+        </Spin>
+    </ContentStyle>
   )
 }
 
