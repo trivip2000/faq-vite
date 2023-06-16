@@ -34,7 +34,7 @@ function App() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      const res = await axios.get('http://localhost:3000/config');
+      const res = await axios.get('https://api.mockfly.dev/mocks/301bc0a5-fcbf-43ba-90c7-3b920a2ea6cb/config');
       const {data } = res
       setConfig({...data})
       setLoading(false);
